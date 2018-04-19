@@ -13,16 +13,14 @@ defmodule SimpleAuth.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", SimpleAuth do
-    pipe_through :browser # Use the default browser stack
-
-    get "/", PageController, :index
-  end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", SimpleAuth do
-  #   pipe_through :api
-
-  #   resources "/users", UserController, except: [:new, :edit]
+  # scope "/", SimpleAuth do
+  #   pipe_through :browser # Use the default browser stack
+  #
   # end
+
+  scope "/api", SimpleAuth do
+    pipe_through :api
+
+    resources "/registrations", RegistrationController, only: [:create, :show, :update]
+  end
 end
