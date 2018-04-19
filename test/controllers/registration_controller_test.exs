@@ -4,41 +4,42 @@ defmodule SimpleAuth.RegistrationControllerTest do
   alias SimpleAuth.User
   @valid_attrs %{username: "username", password: "password"}
   @invalid_attrs %{}
+  @token "the token"
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  test "creates and renders resource when data is valid", %{conn: conn} do
+  test "registers user when credentials are valid", %{conn: conn} do
     conn = post conn, registration_path(conn, :create), user: @valid_attrs
     assert json_response(conn, 201)["data"]["username"]
     assert Repo.get_by(User, %{username: "username"})
   end
 
-  test "does not create resource and renders errors when data is invalid", %{conn: conn} do
+  test "does not create user when credentials are invalid", %{conn: conn} do
     conn = post conn, registration_path(conn, :create), user: @invalid_attrs
     assert json_response(conn, 422)["errors"] != %{}
   end
 
-  test "does not create resource when username already exists", %{conn: conn} do
+  test "does not create user when username already exists", %{conn: conn} do
     Repo.insert!(User.registration_changeset(%User{}, @valid_attrs))
 
     conn = post conn, registration_path(conn, :create), user: @valid_attrs
     assert json_response(conn, 422)["errors"] != %{}
   end
 
-  test "updates and renders chosen resource when data is valid", %{conn: conn} do
-    old_user = Repo.insert! %User{username: "username"}
-    conn = put conn, registration_path(conn, :update, old_user), user: %{username: "username", password: "another"}
-    assert json_response(conn, 200)["data"]["password"] == "[FILTERED]"
+  test "updates password when token is valid", %{conn: conn} do
+    Repo.insert!(%User{username: "username", hashed_password: "dummy hashed password", session_token: @token})
 
-    new_user = Repo.get_by(User, %{username: "username"})
-    refute new_user.hashed_password == old_user.hashed_password
+    conn = post conn, registration_path(conn, :update), token: @token, user: %{password: "the new password"}
+    assert response(conn, 200)
+    refute Repo.get_by(User, %{hashed_password: "dummy hashed password"})
+    refute Repo.get_by(User, %{session_token: @token})
   end
 
-  test "does not update chosen resource and renders errors when data is invalid", %{conn: conn} do
-    user = Repo.insert! %User{}
-    conn = put conn, registration_path(conn, :update, user), user: @invalid_attrs
-    assert json_response(conn, 422)["errors"] != %{}
-  end
+  #test "cannot logout without token", %{conn: conn} do
+  #  conn = post conn, session_path(conn, :delete)
+  #  assert response(conn, 422)
+  #  assert json_response(conn, 422)["error"] == "unauthorized"
+  #end
 end

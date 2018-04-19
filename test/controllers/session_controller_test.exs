@@ -34,16 +34,4 @@ defmodule SimpleAuth.SessionControllerTest do
     assert json_response(conn, 422)["errors"] != %{}
   end
 
-  test "logs out user with correct token", %{conn: conn} do
-    Repo.insert!(%User{username: "username", password: "password", session_token: "the_token"})
-    conn = post conn, session_path(conn, :delete), session: %{token: "the_token"}
-    assert response(conn, 200)
-    refute Repo.get_by(User, %{session_token: "the_token"})
-  end
-
-  test "cannot logout without token", %{conn: conn} do
-    conn = post conn, session_path(conn, :delete)
-    assert response(conn, 422)
-    assert json_response(conn, 422)["error"] == "unauthorized"
-  end
 end

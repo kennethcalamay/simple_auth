@@ -17,15 +17,15 @@ defmodule SimpleAuth.User do
     struct
     |> cast(params, [:username, :password])
     |> validate_required([:username, :password])
+    |> validate_length(:password, min: 8, max: 32)
     |> unique_constraint(:username)
     |> put_hashed_password()
   end
 
-  def password_changeset(struct, params \\ %{}) do
+  def password_reset_changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:password])
-    |> validate_required([:password])
-    |> put_hashed_password()
+    |> registration_changeset(params)
+    |> remove_session_token()
   end
 
   def session_changeset(struct, params \\ %{}) do
@@ -37,7 +37,6 @@ defmodule SimpleAuth.User do
   def destroy_session_changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [])
-    |> remove_session_token()
   end
 
   defp put_hashed_password(changeset) do

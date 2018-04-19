@@ -13,16 +13,12 @@ defmodule SimpleAuth.Router do
     plug :accepts, ["json"]
   end
 
-  # scope "/", SimpleAuth do
-  #   pipe_through :browser # Use the default browser stack
-  #
-  # end
-
   scope "/api", SimpleAuth do
     pipe_through :api
 
-    resources "/registrations", RegistrationController, only: [:create, :show, :update]
-    resources "/sessions", SessionController, only: [:create]
+    post "/register", RegistrationController, :create
+    post "/login", SessionController, :create
+    post "/update_password", RegistrationController, :update
 
     post "/logout", SessionController, :delete
   end
