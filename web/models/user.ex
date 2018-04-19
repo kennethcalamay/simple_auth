@@ -14,6 +14,7 @@ defmodule SimpleAuth.User do
     struct
     |> cast(params, [:username, :password])
     |> validate_required([:username, :password])
+    |> unique_constraint(:username)
   end
 
   def password_changeset(struct, params \\ %{}) do

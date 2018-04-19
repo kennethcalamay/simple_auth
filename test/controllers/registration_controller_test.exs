@@ -20,6 +20,13 @@ defmodule SimpleAuth.RegistrationControllerTest do
     assert json_response(conn, 422)["errors"] != %{}
   end
 
+  test "does not create resource when username already exists", %{conn: conn} do
+    Repo.insert!(User.registration_changeset(%User{}, @valid_attrs))
+
+    conn = post conn, registration_path(conn, :create), user: @valid_attrs
+    assert json_response(conn, 422)["errors"] != %{}
+  end
+
   test "updates and renders chosen resource when data is valid", %{conn: conn} do
     old_user = Repo.insert! %User{username: "username"}
     conn = put conn, registration_path(conn, :update, old_user), user: %{username: "username", password: "another"}
