@@ -3,7 +3,6 @@ defmodule SimpleAuth.RegistrationControllerTest do
 
   alias SimpleAuth.User
   @valid_attrs %{username: "username", password: "password"}
-  @invalid_attrs %{}
   @token "the token"
 
   setup %{conn: conn} do
@@ -17,7 +16,7 @@ defmodule SimpleAuth.RegistrationControllerTest do
   end
 
   test "does not create user when credentials are invalid", %{conn: conn} do
-    conn = post conn, registration_path(conn, :create), user: @invalid_attrs
+    conn = post conn, registration_path(conn, :create)
     assert json_response(conn, 422)["errors"] != %{}
   end
 
@@ -28,7 +27,7 @@ defmodule SimpleAuth.RegistrationControllerTest do
     assert json_response(conn, 422)["errors"] != %{}
   end
 
-  test "updates password when token is valid", %{conn: conn} do
+  test "updates password when credentials are valid", %{conn: conn} do
     Repo.insert!(%User{username: "username", hashed_password: "dummy hashed password", session_token: @token})
 
     conn = post conn, registration_path(conn, :update), token: @token, user: %{password: "the new password"}
@@ -37,9 +36,9 @@ defmodule SimpleAuth.RegistrationControllerTest do
     refute Repo.get_by(User, %{session_token: @token})
   end
 
-  #test "cannot logout without token", %{conn: conn} do
-  #  conn = post conn, session_path(conn, :delete)
-  #  assert response(conn, 422)
-  #  assert json_response(conn, 422)["error"] == "unauthorized"
-  #end
+  test "does not update when no credentials are given", %{conn: conn} do
+    conn = post conn, registration_path(conn, :update), token: @token, user: %{password: "the new password"}
+    assert response(conn, 422)
+    assert json_response(conn, 422)["error"] == "unauthorized"
+  end
 end

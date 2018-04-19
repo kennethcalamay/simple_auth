@@ -13,6 +13,9 @@ defmodule SimpleAuth.User do
 
   @token_length 32
 
+  @doc """
+  Changeset for user registration
+  """
   def registration_changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:username, :password])
@@ -22,23 +25,27 @@ defmodule SimpleAuth.User do
     |> put_hashed_password()
   end
 
+  @doc """
+  Changeset for user password change
+  """
   def password_reset_changeset(struct, params \\ %{}) do
     struct
     |> registration_changeset(params)
     |> remove_session_token()
   end
 
+  @doc """
+  Changeset for login
+  """
   def session_changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [])
     |> assign_session_token()
   end
 
-  def destroy_session_changeset(struct, params \\ %{}) do
-    struct
-    |> cast(params, [])
-  end
+  # utility functions
 
+  # for creating a hashed version of the password
   defp put_hashed_password(changeset) do
     case changeset do
       %Ecto.Changeset{valid?: true, changes: %{password: password}} ->
@@ -49,14 +56,17 @@ defmodule SimpleAuth.User do
     end
   end
 
+  # token assigning: login
   defp assign_session_token(changeset) do
     put_change(changeset, :session_token, generate_token(@token_length))
   end
 
+  # token removal (logout): password change
   defp remove_session_token(changeset) do
     put_change(changeset, :session_token, nil)
   end
 
+  # function for generating token
   defp generate_token(length) do
     :crypto.strong_rand_bytes(length)
     |> Base.encode16()

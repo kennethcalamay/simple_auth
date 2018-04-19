@@ -11,16 +11,17 @@ defmodule SimpleAuth.RegistrationController do
         conn
         |> put_status(:created)
         |> render("show.json", user: user)
-      {:error, changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> render(SimpleAuth.ChangesetView, "error.json", changeset: changeset)
+      {:error, _} ->
+        create(conn, nil)
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    user = Repo.get!(User, id)
-    render(conn, "show.json", user: user)
+  def create(conn, _params) do
+    changeset = User.registration_changeset(%User{})
+
+    conn
+    |> put_status(:unprocessable_entity)
+    |> render(SimpleAuth.ChangesetView, "error.json", changeset: changeset)
   end
 
   def update(conn, %{"token" => session_token, "user" => %{"password" => the_new_password}}) do
@@ -31,15 +32,15 @@ defmodule SimpleAuth.RegistrationController do
       case Repo.update(changeset) do
         {:ok, user} ->
           render(conn, "show.json", user: user)
-        {:error, changeset} ->
-          invalid_update(conn)
+        {:error, _} ->
+          render_invalid_update(conn)
       end
     else
-      invalid_update(conn)
+      render_invalid_update(conn)
     end
   end
 
-  def invalid_update(conn) do
+  def render_invalid_update(conn) do
     conn
     |> put_status(:unprocessable_entity)
     |> json(%{error: "unauthorized"})
