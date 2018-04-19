@@ -40,6 +40,10 @@ defmodule SimpleAuth.RegistrationController do
     end
   end
 
+  def update(conn, _) do
+    render_invalid_update(conn)
+  end
+
   def render_invalid_update(conn) do
     conn
     |> put_status(:unprocessable_entity)

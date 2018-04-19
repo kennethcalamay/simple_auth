@@ -37,7 +37,7 @@ defmodule SimpleAuth.RegistrationControllerTest do
   end
 
   test "does not update when no credentials are given", %{conn: conn} do
-    conn = post conn, registration_path(conn, :update), token: @token, user: %{password: "the new password"}
+    conn = post conn, registration_path(conn, :update)
     assert response(conn, 422)
     assert json_response(conn, 422)["error"] == "unauthorized"
   end
