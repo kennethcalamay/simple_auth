@@ -19,7 +19,5 @@ defmodule SimpleAuth.Router do
     post "/register", RegistrationController, :create
     post "/login", SessionController, :create
     post "/update_password", RegistrationController, :update
-
-    post "/logout", SessionController, :delete
   end
 end
