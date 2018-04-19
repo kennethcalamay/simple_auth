@@ -22,5 +22,8 @@ defmodule SimpleAuth.Router do
     pipe_through :api
 
     resources "/registrations", RegistrationController, only: [:create, :show, :update]
+    resources "/sessions", SessionController, only: [:create]
+
+    post "/logout", SessionController, :delete
   end
 end
